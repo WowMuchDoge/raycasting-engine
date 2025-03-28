@@ -6,6 +6,7 @@
 
 #include "player.h"
 #include "line.h"
+#include "map.h"
 
 #define WIDTH 640
 #define HEIGHT 480
@@ -35,12 +36,23 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
 
 	as->player = CreatePlayer(0.0, 0.0, 0.0);
 
-	LineSegment ls1 = CreateLineSegmentFromPoints(0.0, 0.0, 1.0, 1.0);
-	LineSegment ls2 = CreateLineSegmentFromPoints(0.0, 1.0, 1.0, 0.0);
+	LineSegment walls[] = {
+		CreateLineSegmentFromPoints(-100.0, -100.0, 100.0, 100.0),
+		CreateLineSegmentFromPoints(-90.0, -100.0, 110.0, 100.0),
+		CreateLineSegmentFromPoints(-120.0, -40.0, 150.0, 90.0),
+	};
 
-	Point intersection = LineIntersect(ls1, ls2);
+	Map map = CreateMap(walls, 3);
 
-	printf("Intersection, X: %f, Y %f\n", intersection.x, intersection.y);
+	LineSegment ray = CreateLineSegmentFromPoints(4.0, -10.0, 7.0, 90.0);
+	
+	VerticalSegment intersect = GetIntersection(map, ray);
+
+	printf("Line intersect distance: %f, Is valid %d\n", intersect.distance, intersect.isValid);
+	
+	// Point intersect = LineIntersect(walls[0], ray);
+	//
+	// printf("Line intersect X %f, Line intersect Y %f\n", intersect.x, intersect.y);
 
 	*appstate = as;
 

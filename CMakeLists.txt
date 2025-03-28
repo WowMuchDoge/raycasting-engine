@@ -11,6 +11,7 @@ include_directories(src/include)
 
 add_executable(out src/c/main.c
 				   src/c/player.c
-			   	   src/c/line.c)
+			   	   src/c/line.c
+			       src/c/map.c)
 
 target_link_libraries(out PRIVATE SDL3::SDL3 m)
