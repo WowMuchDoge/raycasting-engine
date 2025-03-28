@@ -5,6 +5,7 @@
 #include "stdio.h"
 
 #include "player.h"
+#include "line.h"
 
 #define WIDTH 640
 #define HEIGHT 480
@@ -33,6 +34,13 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
 	}
 
 	as->player = CreatePlayer(0.0, 0.0, 0.0);
+
+	LineSegment ls1 = CreateLineSegmentFromPoints(0.0, 0.0, 1.0, 1.0);
+	LineSegment ls2 = CreateLineSegmentFromPoints(0.0, 1.0, 1.0, 0.0);
+
+	Point intersection = LineIntersect(ls1, ls2);
+
+	printf("Intersection, X: %f, Y %f\n", intersection.x, intersection.y);
 
 	*appstate = as;
 
@@ -93,8 +101,6 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
 
 	Speeds playerRelativeSpeeds = PlayerMovement(event, as->player.currentSpeeds);
 
-	SDL_Log("pvx %f, pvy %f", playerRelativeSpeeds.vx, playerRelativeSpeeds.vy);
-
 	SetSpeeds(playerRelativeSpeeds, &as->player);
 
 	return SDL_APP_CONTINUE;
@@ -105,9 +111,6 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 	AppState* as = (AppState*)appstate;
 
 	IteratePlayer(&as->player);
-
-	SDL_Log("Player position x %f, y %f, vx %f, vy %f\n", as->player.x, as->player.y,
-			as->player.currentSpeeds.vx, as->player.currentSpeeds.vy);
 
 	SDL_FRect player = {as->player.x * PIXELS_PER_METER, as->player.y * PIXELS_PER_METER, 50, 50};
 

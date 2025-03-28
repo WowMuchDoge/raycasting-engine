@@ -10,6 +10,7 @@ add_subdirectory(vendored/SDL EXCLUDE_FROM_ALL)
 include_directories(src/include)
 
 add_executable(out src/c/main.c
-				   src/c/player.c)
+				   src/c/player.c
+			   	   src/c/line.c)
 
 target_link_libraries(out PRIVATE SDL3::SDL3 m)

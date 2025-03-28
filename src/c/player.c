@@ -35,8 +35,6 @@ void IteratePlayer(Player* player) {
 	double distance = hypot(player->currentSpeeds.vx, player->currentSpeeds.vy);
 	double currentAngle = atan2(player->currentSpeeds.vy, player->currentSpeeds.vx);
 
-	printf("Current angle %f\n", currentAngle);
-
 	adjustedSpeeds.vx = distance * cos(currentAngle + player->rot);
 	adjustedSpeeds.vy = distance * sin(currentAngle + player->rot);
 	adjustedSpeeds.omega = player->currentSpeeds.omega;
