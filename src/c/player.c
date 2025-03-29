@@ -1,11 +1,23 @@
 #include "player.h"
 
 #include <math.h>
+#include <stdint.h>
 
 #include "constants.h"
 
 #define NANO_SEC_PER_SEC 1000000000L
 #define EPSILON 1e-6
+
+const uint8_t simpleMap[8][8] = {
+	{1, 1, 1, 1, 1, 1, 1, 1},
+	{1, 0, 0, 1, 0, 0, 0, 1},
+	{1, 0, 0, 1, 1, 1, 1, 1},
+	{1, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 1},
+	{1, 1, 1, 1, 1, 1, 1, 1},
+};
 
 Player CreatePlayer(double initialX, double initialY, double initialRot) {
 	Player player;
@@ -66,9 +78,35 @@ void RaycastPlayer(Player* player, Map map) {
 	double anglePerPixel = FOV / SCREEN_WIDTH;
 
 	for (int i = 0; i < SCREEN_WIDTH; i++) {
-		double rayAngle = ((i * anglePerPixel) + (FOV / 2)) + player->rot;
-		Point rayStartPoint = (Point){.y = screenDistanceFromPlayer, .x =  screenDistanceFromPlayer * tan(rayAngle)};	
+		double rayAngle = ((i * anglePerPixel) + ((PI / 2) - (FOV / 2))) + player->rot;
+		Point rayPosition = (Point){.y = player->y, .x = player->x};
 
-		player->screenSegments[i] = GetIntersection(map, CreateLineSegmentFromAngle(rayStartPoint, rayAngle, RENDER_DISTANCE));
+		double dx = ITERATE_RAY_DISTANCE * cos(rayAngle);
+		double dy = ITERATE_RAY_DISTANCE * sin(rayAngle);
+
+		int iterations = (int) RENDER_DISTANCE / ITERATE_RAY_DISTANCE;
+
+		for (int j = 0; j < iterations; j++) {
+			rayPosition.x += dx;
+			rayPosition.y += dy;
+
+			double distanceX = j * dx;
+			double distanceY = j * dy;
+
+			if ((int)rayPosition.x >= 8 || (int)rayPosition.x < 0 ||
+				(int)rayPosition.y >= 8 || (int)rayPosition.y < 0) {
+				
+				player->screenSegments[i].isValid = false;
+				break;
+			}
+			
+			if (simpleMap[(int)rayPosition.y][(int)rayPosition.x] == 1) {
+				player->screenSegments[i] = (VerticalSegment){.distance = hypot(rayPosition.x, rayPosition.y)};
+				player->screenSegments[i].isValid = true;
+				break;
+			}
+		}
+
+		player->screenSegments->isValid = false;
 	}
 }

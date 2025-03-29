@@ -38,7 +38,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
 		CreateLineSegmentFromPoints(-120.0, -40.0, 150.0, 90.0),
 	};
 
-	as->player = CreatePlayer(0.0, 0.0, 0.0);
+	as->player = CreatePlayer(3.0, 3.0, 0.0);
 	as->map = CreateMap(walls, 3);
 
 	// printf("Line intersect distance: %f, Is valid %d\n", intersect.distance, intersect.isValid);
@@ -135,6 +135,9 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 		int y1 = (height / 2) + (SCREEN_HEIGHT / 2);
 		int y2 = (SCREEN_HEIGHT / 2) - (height / 2);
 
+		int whiteLevel = (1 / segment.distance) * 255;
+
+		SDL_SetRenderDrawColor(as->renderer, whiteLevel, whiteLevel, whiteLevel, 255);
 		SDL_RenderLine(as->renderer, x1, y1, x2, y2);
 	}
 
