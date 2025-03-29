@@ -4,19 +4,17 @@
 
 #include "stdio.h"
 
+#include "constants.h"
+
 #include "player.h"
 #include "line.h"
 #include "map.h"
-
-#define WIDTH 640
-#define HEIGHT 480
-
-#define PIXELS_PER_METER 100.0
 
 typedef struct {
 	SDL_Window* window;
 	SDL_Renderer* renderer;
 	Player player;
+	Map map;
 } AppState;
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
@@ -29,12 +27,10 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
 		return SDL_APP_FAILURE;
 	}
 
-	if (!SDL_CreateWindowAndRenderer("raycasting-engine", WIDTH, HEIGHT, 0, &as->window, &as->renderer)) {
-		SDL_Log("Could not create window and/or renderer: %s", SDL_GetError());
+	if (!SDL_CreateWindowAndRenderer("raycasting-engine", SCREEN_WIDTH, SCREEN_HEIGHT, 0, &as->window, &as->renderer)) {
+		SDL_Log("Could not create windoHEIGHTw and/or renderer: %s", SDL_GetError());
 		return SDL_APP_FAILURE;
 	}
-
-	as->player = CreatePlayer(0.0, 0.0, 0.0);
 
 	LineSegment walls[] = {
 		CreateLineSegmentFromPoints(-100.0, -100.0, 100.0, 100.0),
@@ -42,13 +38,10 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
 		CreateLineSegmentFromPoints(-120.0, -40.0, 150.0, 90.0),
 	};
 
-	Map map = CreateMap(walls, 3);
+	as->player = CreatePlayer(0.0, 0.0, 0.0);
+	as->map = CreateMap(walls, 3);
 
-	LineSegment ray = CreateLineSegmentFromPoints(4.0, -10.0, 7.0, 90.0);
-	
-	VerticalSegment intersect = GetIntersection(map, ray);
-
-	printf("Line intersect distance: %f, Is valid %d\n", intersect.distance, intersect.isValid);
+	// printf("Line intersect distance: %f, Is valid %d\n", intersect.distance, intersect.isValid);
 	
 	// Point intersect = LineIntersect(walls[0], ray);
 	//
@@ -124,19 +117,36 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 
 	IteratePlayer(&as->player);
 
-	SDL_FRect player = {as->player.x * PIXELS_PER_METER, as->player.y * PIXELS_PER_METER, 50, 50};
+	RaycastPlayer(&as->player, as->map);
 
 	// SDL_RenderClear sets the entire screen to the render draw color
 	SDL_SetRenderDrawColor(as->renderer, 0, 0, 0, 255);
 	SDL_RenderClear(as->renderer);
 
-	SDL_SetRenderDrawColor(as->renderer, 23, 34, 249, 128);
-	SDL_RenderFillRect(as->renderer, &player);
+	SDL_SetRenderDrawColor(as->renderer, 255, 255, 255, 255);
+
+	for (int i = 0; i < SCREEN_WIDTH; i++) {
+		VerticalSegment segment = as->player.screenSegments[i];
+
+		int height = (WALL_HEIGHT / segment.distance) * PIXELS_PER_METER;
+
+		double x1 = i, x2 = i;
+
+		int y1 = (height / 2) + (SCREEN_HEIGHT / 2);
+		int y2 = (SCREEN_HEIGHT / 2) - (height / 2);
+
+		SDL_RenderLine(as->renderer, x1, y1, x2, y2);
+	}
+
 	SDL_RenderPresent(as->renderer);
 
 	return SDL_APP_CONTINUE;
 }
 
 void SDL_AppQuit(void* appstate, SDL_AppResult resuilt) {
+	AppState* as = (AppState*)appstate;
+
+	FreeMap(as->map);
+
 	SDL_free(appstate);
 }

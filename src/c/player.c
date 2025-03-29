@@ -2,6 +2,8 @@
 
 #include <math.h>
 
+#include "constants.h"
+
 #define NANO_SEC_PER_SEC 1000000000L
 #define EPSILON 1e-6
 
@@ -54,4 +56,19 @@ void AdjustSpeeds(Speeds speeds, Player* player) {
 
 void SetSpeeds(Speeds speeds, Player* player) {
 	player->currentSpeeds = speeds;
+}
+
+void RaycastPlayer(Player* player, Map map) {
+	double realScreenWidth = (double)SCREEN_WIDTH / PIXELS_PER_METER;
+
+	double screenDistanceFromPlayer = (realScreenWidth / 2) / (tan(FOV / 2));
+
+	double anglePerPixel = FOV / SCREEN_WIDTH;
+
+	for (int i = 0; i < SCREEN_WIDTH; i++) {
+		double rayAngle = ((i * anglePerPixel) + (FOV / 2)) + player->rot;
+		Point rayStartPoint = (Point){.y = screenDistanceFromPlayer, .x =  screenDistanceFromPlayer * tan(rayAngle)};	
+
+		player->screenSegments[i] = GetIntersection(map, CreateLineSegmentFromAngle(rayStartPoint, rayAngle, RENDER_DISTANCE));
+	}
 }
